@@ -126,13 +126,35 @@ def evaluate_personas(outputs: List[str]) -> tuple[str, List[float]]:
     Respond with a JSON array of scores, e.g., [0.8, 0.9, 0.7, 0.85]
     """
     
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": evaluation_prompt}],
-        temperature=0.3,
-    )
-    
-    scores = json.loads(response.choices[0].message.content)
-    top_response = outputs[scores.index(max(scores))]
-    
-    return top_response, scores
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": evaluation_prompt}],
+            temperature=0.3,
+        )
+        
+        content = response.choices[0].message.content.strip()
+        
+        # Try to parse the content as JSON
+        try:
+            scores = json.loads(content)
+        except json.JSONDecodeError:
+            # If JSON parsing fails, try to extract the scores using regex
+            import re
+            scores_match = re.search(r'\[([\d., ]+)\]', content)
+            if scores_match:
+                scores = [float(score.strip()) for score in scores_match.group(1).split(',')]
+            else:
+                raise ValueError("Unable to extract scores from the API response")
+        
+        if not isinstance(scores, list) or len(scores) != len(outputs):
+            raise ValueError(f"Expected {len(outputs)} scores, but got {len(scores) if isinstance(scores, list) else 'non-list'}")
+        
+        top_response = outputs[scores.index(max(scores))]
+        
+        return top_response, scores
+    except Exception as e:
+        print(f"Error in evaluate_personas: {str(e)}")
+        print(f"API response content: {content}")
+        # Return default values in case of error
+        return outputs[0], [1.0] * len(outputs)
