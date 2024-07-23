@@ -26,7 +26,7 @@ This application is an AI-powered tool that generates detailed user personas bas
 
 1. Clone this repository:
    ```
-   git clone https://github.com/yourusername/ai-persona-generator.git
+   git clone https://github.com/ooKetch22oo/persona-generator
    cd ai-persona-generator
    ```
 
