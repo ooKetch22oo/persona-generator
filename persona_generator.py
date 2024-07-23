@@ -21,8 +21,8 @@ def generate_personas(scraped_text: str) -> List[str]:
     """
     context = {"website_content": scraped_text}
     
-    # Define 8 initial personas with different "seed" personalities
-    models = ["analytical", "creative", "practical", "enthusiastic", "ambitious", "cautious", "social", "innovative"]
+    # Define 4 initial personas with different "seed" personalities
+    models = ["analytical", "creative", "practical", "enthusiastic"]
     
     print("Generating initial personas...")
     # Create a progress bar
@@ -72,20 +72,10 @@ def generate_personas(scraped_text: str) -> List[str]:
     # Close the progress bar
     pbar.close()
 
-    print("Evaluating and selecting top personas...")
-    # Sort personas by their scores and get the top 4
-    sorted_personas = sorted(zip(result.all_prompt_responses, result.performance_scores), 
-                             key=lambda x: x[1], reverse=True)
-    top_4_personas = [persona for persona, _ in sorted_personas[:4]]
-    
-    # If we have less than 4 personas, duplicate the existing ones to reach 4
-    while len(top_4_personas) < 4:
-        top_4_personas.append(top_4_personas[0])
-    
     print("Finalizing personas...")
-    # Combine JSON and narrative for each top persona
+    # Combine JSON and narrative for each persona
     final_personas = []
-    for i, persona in enumerate(top_4_personas, 1):
+    for i, persona in enumerate(result.all_prompt_responses, 1):
         print(f"Finalizing persona {i} of 4...")
         json_data = json.loads(persona[-2])  # Get the JSON data from the second-to-last prompt
         narrative = persona[-1]  # Get the narrative from the last prompt
