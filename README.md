@@ -16,6 +16,10 @@ This application is an AI-powered tool that generates detailed user personas bas
   - Habits (preferred brands, purchases, lifestyle, interests, media consumption)
   - Flashmark.insights (decision-making process, metrics for success)
   - "A Day in the Life" narrative
+- Advanced search functionality to find personas based on specific criteria:
+  - Search by age range, gender, location, interests, psychographic traits, and habits
+  - Sort results by popularity or average age
+- Stores personas in a Neo4j graph database for efficient querying and analysis
 
 ## Requirements
 
@@ -56,6 +60,12 @@ This application is an AI-powered tool that generates detailed user personas bas
 2. When prompted, enter the URL of the website you want to generate personas for.
 
 3. The script will scrape the website, generate personas, and display the top 4 personas in the console.
+
+4. To search for specific personas, use the search functionality:
+   ```
+   python main.py --search
+   ```
+   You can specify search criteria such as age range, gender, location, interests, psychographic traits, and habits. The results can be sorted by popularity or average age.
 
 ## Project Structure
 
