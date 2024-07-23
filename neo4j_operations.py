@@ -92,8 +92,9 @@ class Neo4jOperations:
     @staticmethod
     def _get_common_traits(tx):
         query = """
-        MATCH (p:Persona)-[:HAS_PSYCHOGRAPHIC]->(psy:Psychographic)
-        WITH psy.type AS trait, psy.value AS value, COUNT(*) AS count
+        MATCH (p:Persona)-[:HAS_PSYCHOGRAPHICS]->(psy:Psychographics)
+        UNWIND keys(psy) AS trait
+        WITH trait, psy[trait] AS value, COUNT(*) AS count
         WHERE count > 1
         RETURN trait, value, count
         ORDER BY count DESC
@@ -110,8 +111,9 @@ class Neo4jOperations:
     @staticmethod
     def _get_brand_insights(tx):
         query = """
-        MATCH (p:Persona)-[:PREFERS]->(b:Brand)
-        WITH b.name AS brand, COUNT(*) AS popularity,
+        MATCH (p:Persona)-[:HAS_HABITS]->(h:Habits)
+        UNWIND h.other_brands AS brand
+        WITH brand, COUNT(*) AS popularity,
              COLLECT(DISTINCT p.age) AS ages,
              COLLECT(DISTINCT p.gender) AS genders,
              COLLECT(DISTINCT p.occupation) AS occupations
@@ -134,8 +136,9 @@ class Neo4jOperations:
     @staticmethod
     def _get_interest_demographics(tx):
         query = """
-        MATCH (p:Persona)-[:INTERESTED_IN]->(i:Interest)
-        WITH i.name AS interest, COUNT(*) AS popularity,
+        MATCH (p:Persona)-[:HAS_HABITS]->(h:Habits)
+        UNWIND h.interests AS interest
+        WITH interest, COUNT(*) AS popularity,
              AVG(p.age) AS avg_age,
              COLLECT(DISTINCT p.gender) AS genders,
              COLLECT(DISTINCT p.occupation) AS occupations
