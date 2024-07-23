@@ -39,48 +39,37 @@ def main():
     neo4j_password = os.getenv("NEO4J_PASSWORD")
     neo4j_ops = Neo4jOperations(neo4j_uri, neo4j_user, neo4j_password)
     
-    # Save personas to Neo4j
-    print("\nSaving personas to Neo4j...")
-    for persona in personas:
-        neo4j_ops.save_persona(persona, url)
-    
-    # Find common traits
-    common_traits = neo4j_ops.find_common_traits()
-    
-    # Find brand insights
-    brand_insights = neo4j_ops.find_brand_insights()
-    
-    # Find interest demographics
-    interest_demographics = neo4j_ops.find_interest_demographics()
-    
-    # Output the generated personas
-    print("\nGeneration complete. Displaying personas:")
+    # Output results and save to Neo4j
     for i, persona in enumerate(personas, 1):
         print(f"\n\n--- Persona {i} ---")
         print(persona)
+        
+        # Save persona to Neo4j
+        neo4j_ops.save_persona(url, persona)
     
-    # Output common traits
-    print("\nCommon traits across personas:")
-    for trait in common_traits:
-        print(f"{trait['trait']}: {trait['value']} (Count: {trait['count']})")
+    print("\nPersonas have been saved to the Neo4j database.")
     
-    # Output brand insights
-    print("\nBrand insights:")
-    for insight in brand_insights:
-        print(f"Brand: {insight['brand']}")
-        print(f"  Popularity: {insight['popularity']}")
-        print(f"  Age Range: {insight['age_range']}")
-        print(f"  Genders: {', '.join(insight['genders'])}")
-        print(f"  Occupations: {', '.join(insight['occupations'])}")
+    # Generate insights
+    print("\n--- Insights ---")
+    print("\nCommon Interests:")
+    common_interests = neo4j_ops.find_common_interests()
+    for interest, count in common_interests:
+        print(f"- {interest}: shared by {count} personas")
     
-    # Output interest demographics
-    print("\nInterest demographics:")
-    for demo in interest_demographics:
-        print(f"Interest: {demo['interest']}")
-        print(f"  Popularity: {demo['popularity']}")
-        print(f"  Average Age: {demo['average_age']}")
-        print(f"  Genders: {', '.join(demo['genders'])}")
-        print(f"  Occupations: {', '.join(demo['occupations'])}")
+    print("\nChallenges for 25-34 age group:")
+    challenges = neo4j_ops.find_challenges_by_age_group("25-34")
+    for challenge, count in challenges:
+        print(f"- {challenge}: faced by {count} personas")
+    
+    print("\nBrands preferred by personas valuing 'Innovation':")
+    brands = neo4j_ops.find_brands_by_value("Innovation")
+    for brand, count in brands:
+        print(f"- {brand}: preferred by {count} personas")
+    
+    print("\nPersonas similar to the first persona:")
+    similar_personas = neo4j_ops.find_similar_personas(personas[0]['name'])
+    for persona, similarity in similar_personas:
+        print(f"- {persona}: {similarity} shared attributes")
     
     # Close Neo4j connection
     neo4j_ops.close()
