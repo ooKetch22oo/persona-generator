@@ -45,12 +45,24 @@ This application is an AI-powered tool that generates detailed user personas bas
    pip install -r requirements.txt
    ```
 
-4. Create a `.env` file in the root directory and add your OpenAI API key:
+4. Create a `.env` file in the root directory and add your OpenAI API key and Neo4j credentials:
    ```
    OPENAI_API_KEY=your_api_key_here
+   NEO4J_URI=bolt://localhost:7687
+   NEO4J_USER=neo4j
+   NEO4J_PASSWORD=your_password_here
    ```
 
+## Neo4j Setup
+
+1. Download and install Neo4j Desktop from the [official website](https://neo4j.com/download/).
+2. Create a new project and add a new graph database.
+3. Start the database and note down the connection details (URI, username, and password).
+4. Update the `.env` file with your Neo4j credentials.
+
 ## Usage
+
+0. Ensure your Neo4j database is running.
 
 1. Run the main script:
    ```
