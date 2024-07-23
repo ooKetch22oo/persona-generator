@@ -8,19 +8,18 @@ class Neo4jOperations:
     def close(self):
         self.driver.close()
 
-    def save_persona(self, persona, website_url):
+    def save_persona(self, website_url, persona_data):
         with self.driver.session() as session:
-            session.write_transaction(self._create_and_link_persona, persona, website_url)
+            session.write_transaction(self._create_and_link_persona, website_url, persona_data)
 
     @staticmethod
-    def _create_and_link_persona(tx, persona, website_url):
-        persona_data = json.loads(persona)
-        
-        # Create Website node
+    def _create_and_link_persona(tx, website_url, persona_data):
+        # Create Website node if it doesn't exist
         tx.run("MERGE (w:Website {url: $url})", url=website_url)
 
         # Create Persona node
-        persona_query = """
+        persona = json.loads(persona_data)
+        create_persona_query = """
         CREATE (p:Persona {
             name: $name,
             age: $age,
@@ -28,59 +27,63 @@ class Neo4jOperations:
             ethnicity: $ethnicity,
             location: $location,
             occupation: $occupation,
-            income: $income,
-            education: $education
+            income_level: $income_level,
+            education_level: $education_level
         })
-        WITH p
-        MATCH (w:Website {url: $website_url})
-        CREATE (p)-[:GENERATED_FROM]->(w)
-        RETURN p
         """
-        result = tx.run(persona_query, 
-                        name=persona_data['name'],
-                        age=persona_data['age'],
-                        gender=persona_data['gender'],
-                        ethnicity=persona_data['ethnicity'],
-                        location=persona_data['location'],
-                        occupation=persona_data['occupation'],
-                        income=persona_data['income'],
-                        education=persona_data['education'],
-                        website_url=website_url)
-        persona_node = result.single()[0]
+        tx.run(create_persona_query, **persona)
 
-        # Create and link psychographics
-        for key, value in persona_data.get('psychographics', {}).items():
-            tx.run("MATCH (p:Persona) WHERE id(p) = $persona_id "
-                   "MERGE (psy:Psychographic {type: $type, value: $value}) "
-                   "CREATE (p)-[:HAS_PSYCHOGRAPHIC]->(psy)",
-                   persona_id=persona_node.id, type=key, value=str(value))
+        # Create Psychographics node and link to Persona
+        create_psychographics_query = """
+        MATCH (p:Persona {name: $name})
+        CREATE (psy:Psychographics {
+            values_and_beliefs: $values_and_beliefs,
+            challenges: $challenges,
+            needs: $needs,
+            frustrations: $frustrations,
+            goals: $goals,
+            behaviors: $behaviors
+        })
+        CREATE (p)-[:HAS_PSYCHOGRAPHICS]->(psy)
+        """
+        tx.run(create_psychographics_query, **persona)
 
-        # Create and link habits
-        for key, value in persona_data.get('habits', {}).items():
-            tx.run("MATCH (p:Persona) WHERE id(p) = $persona_id "
-                   "MERGE (h:Habit {type: $type, value: $value}) "
-                   "CREATE (p)-[:HAS_HABIT]->(h)",
-                   persona_id=persona_node.id, type=key, value=str(value))
+        # Create Habits node and link to Persona
+        create_habits_query = """
+        MATCH (p:Persona {name: $name})
+        CREATE (h:Habits {
+            other_brands: $other_brands,
+            purchases: $purchases,
+            lifestyle: $lifestyle,
+            interests: $interests,
+            media_consumption: $media_consumption
+        })
+        CREATE (p)-[:HAS_HABITS]->(h)
+        """
+        tx.run(create_habits_query, **persona)
 
-        # Create and link brands
-        for brand in persona_data.get('habits', {}).get('preferred_brands', []):
-            tx.run("MATCH (p:Persona) WHERE id(p) = $persona_id "
-                   "MERGE (b:Brand {name: $brand}) "
-                   "CREATE (p)-[:PREFERS]->(b)",
-                   persona_id=persona_node.id, brand=brand)
+        # Create Flashmark.insights node and link to Persona
+        create_insights_query = """
+        MATCH (p:Persona {name: $name})
+        CREATE (i:Insights {content: $flashmark_insights})
+        CREATE (p)-[:HAS_INSIGHTS]->(i)
+        """
+        tx.run(create_insights_query, **persona)
 
-        # Create and link interests
-        for interest in persona_data.get('habits', {}).get('interests', []):
-            tx.run("MATCH (p:Persona) WHERE id(p) = $persona_id "
-                   "MERGE (i:Interest {name: $interest}) "
-                   "CREATE (p)-[:INTERESTED_IN]->(i)",
-                   persona_id=persona_node.id, interest=interest)
+        # Create DayInLife node and link to Persona
+        create_day_in_life_query = """
+        MATCH (p:Persona {name: $name})
+        CREATE (d:DayInLife {content: $day_in_life})
+        CREATE (p)-[:HAS_DAY_IN_LIFE]->(d)
+        """
+        tx.run(create_day_in_life_query, **persona)
 
-        # Create and link insights
-        for key, value in persona_data.get('Flashmark.insights', {}).items():
-            tx.run("MATCH (p:Persona) WHERE id(p) = $persona_id "
-                   "CREATE (p)-[:HAS_INSIGHT]->(:Insight {type: $type, value: $value})",
-                   persona_id=persona_node.id, type=key, value=str(value))
+        # Link Persona to Website
+        tx.run("""
+        MATCH (p:Persona {name: $name})
+        MATCH (w:Website {url: $url})
+        CREATE (p)-[:GENERATED_FOR]->(w)
+        """, name=persona['name'], url=website_url)
 
     def find_common_traits(self):
         with self.driver.session() as session:
