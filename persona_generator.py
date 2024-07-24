@@ -76,11 +76,18 @@ def generate_personas(scraped_text: str) -> List[str]:
     # Combine JSON and narrative for each persona
     final_personas = []
     for i, persona in enumerate(result.all_prompt_responses, 1):
-        print(f"Finalizing persona {i} of 4...")
-        json_data = json.loads(persona[-2])  # Get the JSON data from the second-to-last prompt
-        narrative = persona[-1]  # Get the narrative from the last prompt
-        json_data["A Day in the Life"] = narrative
-        final_personas.append(json.dumps(json_data, indent=2))
+        print(f"Finalizing persona {i} of {len(result.all_prompt_responses)}...")
+        try:
+            json_data = json.loads(persona[-2])  # Get the JSON data from the second-to-last prompt
+            narrative = persona[-1]  # Get the narrative from the last prompt
+            json_data["A Day in the Life"] = narrative
+            final_personas.append(json.dumps(json_data, indent=2))
+        except json.JSONDecodeError as e:
+            print(f"Error decoding JSON for persona {i}:")
+            print(f"Content: {persona[-2]}")
+            print(f"Error: {str(e)}")
+            # Add a placeholder for the failed persona
+            final_personas.append(json.dumps({"error": f"Failed to parse persona {i}"}, indent=2))
     
     return final_personas
 
