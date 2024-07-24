@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import requests
 from bs4 import BeautifulSoup
 from persona_generator import generate_personas
-# from neo4j_operations import Neo4jOperations
+from neo4j_operations import Neo4jOperations
 
 def scrape_website(url: str) -> str:
     """
@@ -40,27 +40,38 @@ def main():
     
     print("\nPersonas have been generated and printed to the terminal.")
     
-    # # Generate insights (commented out Neo4j operations)
-    # print("\n--- Insights ---")
-    # print("\nCommon Interests:")
-    # common_interests = neo4j_ops.find_common_interests()
-    # for interest, count in common_interests:
-    #     print(f"- {interest}: shared by {count} personas")
+    # Initialize Neo4j operations
+    neo4j_ops = Neo4jOperations(os.getenv("NEO4J_URI"), os.getenv("NEO4J_USER"), os.getenv("NEO4J_PASSWORD"))
     
-    # print("\nChallenges for 25-34 age group:")
-    # challenges = neo4j_ops.find_challenges_by_age_group("25-34")
-    # for challenge, count in challenges:
-    #     print(f"- {challenge}: faced by {count} personas")
+    # Save personas to Neo4j
+    for persona in personas:
+        neo4j_ops.save_persona(url, persona)
     
-    # print("\nBrands preferred by personas valuing 'Innovation':")
-    # brands = neo4j_ops.find_brands_by_value("Innovation")
-    # for brand, count in brands:
-    #     print(f"- {brand}: preferred by {count} personas")
+    # Generate insights
+    print("\n--- Insights ---")
+    print("\nCommon Interests:")
+    common_interests = neo4j_ops.find_common_interests()
+    for interest, count in common_interests:
+        print(f"- {interest}: shared by {count} personas")
     
-    # print("\nPersonas similar to the first persona:")
-    # similar_personas = neo4j_ops.find_similar_personas(personas[0]['name'])
-    # for persona, similarity in similar_personas:
-    #     print(f"- {persona}: {similarity} shared attributes")
+    print("\nChallenges for 25-34 age group:")
+    challenges = neo4j_ops.find_challenges_by_age_group("25-34")
+    for challenge, count in challenges:
+        print(f"- {challenge}: faced by {count} personas")
+    
+    print("\nBrands preferred by personas valuing 'Innovation':")
+    brands = neo4j_ops.find_brands_by_value("Innovation")
+    for brand, count in brands:
+        print(f"- {brand}: preferred by {count} personas")
+    
+    print("\nPersonas similar to the first persona:")
+    first_persona = json.loads(personas[0])
+    similar_personas = neo4j_ops.find_similar_personas(first_persona['name'])
+    for persona, similarity in similar_personas:
+        print(f"- {persona}: {similarity} shared attributes")
+    
+    # Close Neo4j connection
+    neo4j_ops.close()
 
 if __name__ == "__main__":
     main()
