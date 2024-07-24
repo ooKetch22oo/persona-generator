@@ -1,9 +1,8 @@
 import os
-import os
 from openai import OpenAI
 import json
 from typing import List
-from chain import FusionChain
+from chain import FusionChain, MinimalChainable
 from tqdm import tqdm
 
 # Initialize the OpenAI client
