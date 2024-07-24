@@ -57,12 +57,7 @@ def generate_personas(scraped_text: str) -> List[str]:
             """Create a brief Flashmark.insights section for the persona, focusing on their decision-making process and metrics for success. Use the following JSON as context:
             {{output[-1]}}
             Respond in strictly JSON format, adding to the existing JSON.
-            """,
-            # # Part 5: Generate "A Day in the Life"
-            # """Using all the information generated so far, create a detailed "A Day in the Life" narrative for this persona. The narrative should be at least 300 words long and showcase the persona's habits, challenges, and interactions with the product or service related to the website. Use the following JSON as context:
-            # {{output[-1]}}
-            # Respond with a markdown-formatted narrative.
-            # """
+            """
         ],
         evaluator=evaluate_personas,
         get_model_name=lambda model: model,
@@ -72,21 +67,17 @@ def generate_personas(scraped_text: str) -> List[str]:
     pbar.close()
 
     print("Finalizing personas...")
-    # Combine JSON and narrative for each persona
+    # Process each persona
     final_personas = []
     for i, persona in enumerate(result.all_prompt_responses, 1):
         print(f"Finalizing persona {i} of {len(result.all_prompt_responses)}...")
         try:
-            json_data = json.loads(persona[-2])  # Get the JSON data from the second-to-last prompt
-            narrative = persona[-1]  # Get the narrative from the last prompt
-            json_data["A Day in the Life"] = narrative
+            json_data = json.loads(persona[-1])  # Get the JSON data from the last prompt
             final_personas.append(json.dumps(json_data, indent=2))
         except json.JSONDecodeError as e:
             print(f"Error decoding JSON for persona {i}:")
-            print(f"Content: {persona[-2]}")
+            print(f"Content: {persona[-1]}")
             print(f"Error: {str(e)}")
-            # Add a placeholder for the failed persona
-            # final_personas.append(json.dumps({"error": f"Failed to parse persona {i}"}, indent=2))
     
     return final_personas
 
