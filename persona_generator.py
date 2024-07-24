@@ -72,10 +72,10 @@ def generate_personas(scraped_text: str) -> List[str]:
     for i, persona in enumerate(result.all_prompt_responses, 1):
         print(f"Finalizing persona {i} of {len(result.all_prompt_responses)}...")
         try:
-            json_data = json.loads(persona[-1])  # Get the JSON data from the last prompt
+            json_data = persona[-1]  # The last item is already a dictionary
             final_personas.append(json.dumps(json_data, indent=2))
-        except json.JSONDecodeError as e:
-            print(f"Error decoding JSON for persona {i}:")
+        except Exception as e:
+            print(f"Error processing persona {i}:")
             print(f"Content: {persona[-1]}")
             print(f"Error: {str(e)}")
     
