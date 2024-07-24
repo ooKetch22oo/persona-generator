@@ -1,5 +1,6 @@
 from typing import List, Dict, Callable, Any, Union
 from pydantic import BaseModel
+import concurrent.futures
 
 # Define the structure of the FusionChain result
 class FusionChainResult(BaseModel):
@@ -22,13 +23,13 @@ class FusionChain:
         all_outputs = []
         all_context_filled_prompts = []
 
-        # Run each model through the MinimalChainable
-        for model in models:
-            outputs, context_filled_prompts = MinimalChainable.run(
-                context, model, callable, prompts
-            )
-            all_outputs.append(outputs)
-            all_context_filled_prompts.append(context_filled_prompts)
+        # Run each model through the MinimalChainable in parallel
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(models)) as executor:
+            future_to_model = {executor.submit(MinimalChainable.run, context, model, callable, prompts): model for model in models}
+            for future in concurrent.futures.as_completed(future_to_model):
+                outputs, context_filled_prompts = future.result()
+                all_outputs.append(outputs)
+                all_context_filled_prompts.append(context_filled_prompts)
 
         # Evaluate the last output of each model
         last_outputs = [outputs[-1] for outputs in all_outputs]
