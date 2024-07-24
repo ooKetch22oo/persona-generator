@@ -26,7 +26,7 @@ def generate_personas(scraped_text: str) -> List[str]:
     
     print("Generating initial personas...")
     # Create a progress bar
-    pbar = tqdm(total=len(models) * 5, desc="Generating personas", unit="step")
+    pbar = tqdm(total=len(models) * 4, desc="Generating personas", unit="step")
     
     # Custom callable to update progress bar
     def prompt_with_progress(model: str, prompt_text: str) -> str:
@@ -59,11 +59,11 @@ def generate_personas(scraped_text: str) -> List[str]:
             {{output[-1]}}
             Respond in strictly JSON format, adding to the existing JSON.
             """,
-            # Part 5: Generate "A Day in the Life"
-            """Using all the information generated so far, create a detailed "A Day in the Life" narrative for this persona. The narrative should be at least 300 words long and showcase the persona's habits, challenges, and interactions with the product or service related to the website. Use the following JSON as context:
-            {{output[-1]}}
-            Respond with a markdown-formatted narrative.
-            """
+            # # Part 5: Generate "A Day in the Life"
+            # """Using all the information generated so far, create a detailed "A Day in the Life" narrative for this persona. The narrative should be at least 300 words long and showcase the persona's habits, challenges, and interactions with the product or service related to the website. Use the following JSON as context:
+            # {{output[-1]}}
+            # Respond with a markdown-formatted narrative.
+            # """
         ],
         evaluator=evaluate_personas,
         get_model_name=lambda model: model,
@@ -87,7 +87,7 @@ def generate_personas(scraped_text: str) -> List[str]:
             print(f"Content: {persona[-2]}")
             print(f"Error: {str(e)}")
             # Add a placeholder for the failed persona
-            final_personas.append(json.dumps({"error": f"Failed to parse persona {i}"}, indent=2))
+            # final_personas.append(json.dumps({"error": f"Failed to parse persona {i}"}, indent=2))
     
     return final_personas
 
