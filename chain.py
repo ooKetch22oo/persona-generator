@@ -10,7 +10,7 @@ class FusionChainResult(BaseModel):
     all_prompt_responses: List[List[Any]]
     all_context_filled_prompts: List[List[str]]
     performance_scores: List[float]
-    model_names: List[str]
+    used_model_names: List[str]
 
 
 class FusionChain:
@@ -58,14 +58,14 @@ class FusionChain:
         last_outputs = [outputs[-1] for outputs in all_outputs]
         top_response, performance_scores = evaluator(last_outputs)
 
-        model_names = [get_model_name(model) for model in models]
+        used_model_names = [get_model_name(model) for model in models]
 
         return FusionChainResult(
             top_response=top_response,
             all_prompt_responses=all_outputs,
             all_context_filled_prompts=all_context_filled_prompts,
             performance_scores=performance_scores,
-            model_names=model_names,
+            used_model_names=used_model_names,
         )
 
     @staticmethod
@@ -119,14 +119,14 @@ class FusionChain:
         last_outputs = [outputs[-1] for outputs in all_outputs]
         top_response, performance_scores = evaluator(last_outputs)
 
-        model_names = [get_model_name(model) for model in models]
+        used_model_names = [get_model_name(model) for model in models]
 
         return FusionChainResult(
             top_response=top_response,
             all_prompt_responses=all_outputs,
             all_context_filled_prompts=all_context_filled_prompts,
             performance_scores=performance_scores,
-            model_names=model_names,
+            used_model_names=used_model_names,
         )
 
 
