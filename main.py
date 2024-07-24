@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import requests
 from bs4 import BeautifulSoup
 from persona_generator import generate_personas
-from neo4j_operations import Neo4jOperations
+# from neo4j_operations import Neo4jOperations
 
 def scrape_website(url: str) -> str:
     """
@@ -41,6 +41,8 @@ def main():
     
     print("\nPersonas have been generated and printed to the terminal.")
     
+    # Neo4j operations and insights generation are commented out
+    """
     # Initialize Neo4j operations
     neo4j_ops = Neo4jOperations(os.getenv("NEO4J_URI"), os.getenv("NEO4J_USER"), os.getenv("NEO4J_PASSWORD"))
     
@@ -73,6 +75,7 @@ def main():
     
     # Close Neo4j connection
     neo4j_ops.close()
+    """
 
 if __name__ == "__main__":
     main()
